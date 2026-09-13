@@ -38,6 +38,17 @@
     window.addEventListener('scroll', setNavState, { passive: true });
   }
 
+  // ---- FAQ accordion (button + grid-rows panel, animates either way) ----
+  document.querySelectorAll('.faq-item').forEach(function (item) {
+    var q = item.querySelector('.faq-q');
+    if (!q) return;
+    q.addEventListener('click', function () {
+      var open = item.getAttribute('data-open') === 'true';
+      item.setAttribute('data-open', open ? 'false' : 'true');
+      q.setAttribute('aria-expanded', open ? 'false' : 'true');
+    });
+  });
+
   document.querySelectorAll('.section, .hero').forEach(function (el) { el.classList.add('reveal'); });
 
   // ---- Collect everything that needs a "reveal on visible" treatment ----
@@ -46,7 +57,7 @@
   ));
   var splitWords = Array.prototype.slice.call(document.querySelectorAll('.split-word'));
   var staggerGroups = Array.prototype.slice.call(
-    document.querySelectorAll('.bento-grid, .stats-band, .value-grid, .service-grid')
+    document.querySelectorAll('.bento-grid, .stats-band, .value-grid, .service-grid, .contact-rows')
   ).filter(function (el) { return el.querySelector('.stagger-child'); });
   var counters = Array.prototype.slice.call(document.querySelectorAll('[data-counter-to]'));
 
@@ -148,6 +159,17 @@
           window.gsap.to(parallaxEl, {
             yPercent: 16, scale: 1.08, ease: 'none',
             scrollTrigger: { trigger: parallaxEl.closest('.hero'), start: 'top top', end: 'bottom top', scrub: .5 },
+          });
+        }
+
+        // ---- About (cinematic): image drifts independently of the static
+        // copy as the section scrolls — the "scroll-linked image/text
+        // relationship" instead of a static image-left/text-right split.
+        var aboutParallax = document.querySelector('.about-cinematic-media');
+        if (aboutParallax) {
+          window.gsap.to(aboutParallax, {
+            yPercent: -8, ease: 'none',
+            scrollTrigger: { trigger: aboutParallax.closest('.about-cinematic'), start: 'top bottom', end: 'bottom top', scrub: .6 },
           });
         }
       }
