@@ -3,15 +3,19 @@
   "heroVariant": "dark-glass",
   "serviceLayout": "bento-grid",
   "ctaStyle": "gradient",
-  "paletteSeed": 17,
-  "heroSeed": 17,
-  "copySeed": 17,
+  "paletteSeed": 20,
+  "heroSeed": 20,
+  "copySeed": 20,
   "visualSystem": {
     "key": "dark-premium",
     "label": "Dark Premium",
     "dark": true,
     "cardStyle": "glass",
     "ctaLayout": "split-image"
+  },
+  "motionPreset": {
+    "key": "sticky-storytelling",
+    "label": "Sticky Storytelling"
   },
   "resolvedVisualDirection": {
     "palette_source": "design_direction",
@@ -38,6 +42,8 @@
       "rust"
     ],
     "visual_system": "dark-premium",
-    "visual_system_label": "Dark Premium"
+    "visual_system_label": "Dark Premium",
+    "motion_preset": "sticky-storytelling",
+    "motion_preset_label": "Sticky Storytelling"
   }
 }
