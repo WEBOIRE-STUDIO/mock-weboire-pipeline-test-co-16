@@ -4,8 +4,9 @@
    generator picked — not from editing this file per demo. */
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; display: block; }
 body {
+  display: block;
   margin: 0;
   font-family: var(--font-body), sans-serif;
   color: var(--text-dark);
