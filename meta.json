@@ -1,0 +1,34 @@
+{
+  "templateKey": "home_services",
+  "heroVariant": "split-image",
+  "serviceLayout": "image-rows",
+  "ctaStyle": "gradient",
+  "paletteSeed": 0,
+  "heroSeed": 0,
+  "copySeed": 0,
+  "resolvedVisualDirection": {
+    "palette_source": "design_direction",
+    "palette_key": "warm-terracotta",
+    "palette": {
+      "primary": "#b5502e",
+      "primaryDark": "#7a3620",
+      "accent": "#e0a458",
+      "textDark": "#241610",
+      "textOnPrimary": "#ffffff",
+      "bgLight": "#fdf7f2",
+      "bgAlt": "#f7e9dc",
+      "border": "#ecd3bd",
+      "radius": "8px",
+      "ctaStyle": "gradient",
+      "headingFont": "Fraunces",
+      "bodyFont": "Inter",
+      "googleFonts": "Fraunces:wght@600;700;800|Inter:wght@400;500;600"
+    },
+    "hero_variant": "split-image",
+    "section_style": "card-heavy",
+    "image_category": "general",
+    "matched_keywords": [
+      "rust"
+    ]
+  }
+}
