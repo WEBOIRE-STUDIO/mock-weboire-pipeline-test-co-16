@@ -1,11 +1,18 @@
 {
   "templateKey": "home_services",
-  "heroVariant": "split-image",
-  "serviceLayout": "image-rows",
+  "heroVariant": "dark-glass",
+  "serviceLayout": "bento-grid",
   "ctaStyle": "gradient",
-  "paletteSeed": 0,
-  "heroSeed": 0,
-  "copySeed": 0,
+  "paletteSeed": 4,
+  "heroSeed": 4,
+  "copySeed": 4,
+  "visualSystem": {
+    "key": "dark-premium",
+    "label": "Dark Premium",
+    "dark": true,
+    "cardStyle": "glass",
+    "ctaLayout": "split-image"
+  },
   "resolvedVisualDirection": {
     "palette_source": "design_direction",
     "palette_key": "warm-terracotta",
@@ -24,11 +31,13 @@
       "bodyFont": "Inter",
       "googleFonts": "Fraunces:wght@600;700;800|Inter:wght@400;500;600"
     },
-    "hero_variant": "split-image",
+    "hero_variant": "dark-glass",
     "section_style": "card-heavy",
-    "image_category": "general",
+    "image_category": "electrical",
     "matched_keywords": [
       "rust"
-    ]
+    ],
+    "visual_system": "dark-premium",
+    "visual_system_label": "Dark Premium"
   }
 }
