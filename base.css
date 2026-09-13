@@ -45,6 +45,33 @@ img { max-width: 100%; display: block; width: 100%; height: 100%; object-fit: co
 .img-clip-reveal { overflow: hidden; opacity: 0; transform: scale(1.08); transition: opacity 1s ease, transform 1.1s cubic-bezier(.2,.7,.2,1); }
 .img-clip-reveal.in-view { opacity: 1; transform: scale(1); }
 
+/* Split-heading: each WORD gets its own mask+slide, staggered by script.js —
+   the headline enters word-by-word rather than as one fading block. Same
+   self-clip caution as .reveal-mask above: the observed target (.split-word)
+   keeps a normal, non-zero-area box; only the inner span is clipped/shifted. */
+.split-heading { display: block; }
+.split-word { display: inline-block; overflow: hidden; vertical-align: top; }
+.split-word > span { display: inline-block; transform: translateY(115%) rotate(4deg); transform-origin: left bottom; transition: transform .7s cubic-bezier(.2,.8,.2,1); }
+.split-word.in-view > span { transform: translateY(0) rotate(0deg); }
+
+/* ---------- Section entrance directions (per motion preset) ---------- */
+.reveal-dir-left, .reveal-dir-right, .reveal-dir-up, .reveal-dir-down,
+.reveal-dir-up-scale, .reveal-dir-up-slow, .reveal-dir-scale-in, .reveal-dir-scale-out {
+  opacity: 0; transition: opacity .8s cubic-bezier(.2,.7,.3,1), transform .8s cubic-bezier(.2,.7,.3,1);
+}
+.reveal-dir-left { transform: translateX(-48px); }
+.reveal-dir-right { transform: translateX(48px); }
+.reveal-dir-up { transform: translateY(36px); }
+.reveal-dir-down { transform: translateY(-28px); }
+.reveal-dir-up-scale { transform: translateY(30px) scale(.97); }
+.reveal-dir-up-slow { transform: translateY(20px); transition-duration: 1.3s; transition-timing-function: cubic-bezier(.16,1,.3,1); }
+.reveal-dir-scale-in { transform: scale(.92); }
+.reveal-dir-scale-out { transform: scale(1.06); }
+.reveal-dir-left.in-view, .reveal-dir-right.in-view, .reveal-dir-up.in-view, .reveal-dir-down.in-view,
+.reveal-dir-up-scale.in-view, .reveal-dir-up-slow.in-view, .reveal-dir-scale-in.in-view, .reveal-dir-scale-out.in-view {
+  opacity: 1; transform: none;
+}
+
 .img-hover { overflow: hidden; border-radius: var(--radius); }
 .img-hover img { transition: transform .6s cubic-bezier(.2,.7,.2,1); }
 .img-hover:hover img { transform: scale(1.06); }
@@ -56,11 +83,17 @@ img { max-width: 100%; display: block; width: 100%; height: 100%; object-fit: co
 [data-parallax] { will-change: transform; }
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal, .reveal-mask > span, .img-clip-reveal, .img-hover img, .btn {
+  .reveal, .reveal-mask > span, .split-word > span, .img-clip-reveal, .img-hover img, .btn,
+  .reveal-dir-left, .reveal-dir-right, .reveal-dir-up, .reveal-dir-down,
+  .reveal-dir-up-scale, .reveal-dir-up-slow, .reveal-dir-scale-in, .reveal-dir-scale-out {
     transition: none !important; animation: none !important;
   }
-  .reveal, .img-clip-reveal { opacity: 1 !important; transform: none !important; clip-path: none !important; }
-  .reveal-mask > span { transform: none !important; }
+  .reveal, .img-clip-reveal,
+  .reveal-dir-left, .reveal-dir-right, .reveal-dir-up, .reveal-dir-down,
+  .reveal-dir-up-scale, .reveal-dir-up-slow, .reveal-dir-scale-in, .reveal-dir-scale-out {
+    opacity: 1 !important; transform: none !important; clip-path: none !important;
+  }
+  .reveal-mask > span, .split-word > span { transform: none !important; }
 }
 
 /* ---------- Nav ---------- */
@@ -95,10 +128,30 @@ img { max-width: 100%; display: block; width: 100%; height: 100%; object-fit: co
   .nav-links {
     position: fixed; inset: 64px 0 auto 0; background: #fff; flex-direction: column;
     padding: 20px 24px; gap: 16px; border-bottom: 1px solid var(--border);
-    transform: translateY(-120%); transition: transform .3s ease; box-shadow: 0 12px 24px rgba(0,0,0,.08);
+    transform: translateY(-16px); opacity: 0; visibility: hidden;
+    transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .3s ease, visibility 0s linear .35s;
+    box-shadow: 0 20px 40px -20px rgba(0,0,0,.25);
   }
-  .nav-links.open { transform: translateY(0); }
-  .nav-toggle { display: block; }
+  .nav-links.open {
+    transform: translateY(0); opacity: 1; visibility: visible;
+    transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .3s ease, visibility 0s;
+  }
+  /* Links themselves cascade in slightly after the panel, not all at once. */
+  .nav-links a { opacity: 0; transform: translateY(-8px); transition: opacity .3s ease, transform .3s ease; }
+  .nav-links.open a { opacity: 1; transform: translateY(0); }
+  .nav-links.open a:nth-child(1) { transition-delay: .06s; }
+  .nav-links.open a:nth-child(2) { transition-delay: .10s; }
+  .nav-links.open a:nth-child(3) { transition-delay: .14s; }
+  .nav-links.open a:nth-child(4) { transition-delay: .18s; }
+  .nav-links.open a:nth-child(5) { transition-delay: .22s; }
+  .nav-links.open a:nth-child(6) { transition-delay: .26s; }
+  .nav-links.open a:nth-child(7) { transition-delay: .30s; }
+  .nav-links.open a:nth-child(8) { transition-delay: .34s; }
+  .nav-toggle { display: block; transition: transform .3s ease; }
+  .nav-toggle.open { transform: rotate(90deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-links, .nav-links a, .nav-toggle { transition: none !important; }
 }
 
 /* ---------- Buttons ---------- */
@@ -279,8 +332,8 @@ body.style-rounded-blocks .service-card { border-radius: 24px; border-width: 2px
    ===================================================================== */
 
 /* ---------- Sticky nav: scroll-shrink ---------- */
-.site-nav { transition: background-color .3s ease, box-shadow .3s ease, padding .3s ease; }
-.site-nav.nav-scrolled { box-shadow: 0 8px 30px -20px rgba(0,0,0,.4); }
+.site-nav { transition: background-color .3s ease, box-shadow .3s ease, padding .3s ease, backdrop-filter .3s ease; }
+.site-nav.nav-scrolled { box-shadow: 0 8px 30px -20px rgba(0,0,0,.4); backdrop-filter: blur(16px); }
 .site-nav.nav-scrolled .nav-inner { padding-top: 10px; padding-bottom: 10px; }
 body.theme-dark .site-nav { background: rgba(10,10,11,0.72); border-bottom-color: var(--border); }
 body.theme-dark .nav-brand,
@@ -467,4 +520,85 @@ body.theme-dark .stat-tile .stat-number { color: var(--accent); }
 
 @media (prefers-reduced-motion: reduce) {
   .stagger-child { opacity: 1 !important; transform: none !important; }
+}
+
+/* =====================================================================
+   CARD HOVER PERSONALITIES (body.cardhover-*) — bento/service/value cards
+   don't all behave identically; which one applies comes from the motion
+   preset, not the card markup itself.
+   ===================================================================== */
+body.cardhover-accent-line .service-card, body.cardhover-accent-line .bento-cell.card-bordered, body.cardhover-accent-line .value-card.card-bordered {
+  position: relative; overflow: hidden;
+}
+body.cardhover-accent-line .service-card::after, body.cardhover-accent-line .bento-cell.card-bordered::after, body.cardhover-accent-line .value-card.card-bordered::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--accent);
+  transform: scaleX(0); transform-origin: left; transition: transform .35s cubic-bezier(.2,.8,.2,1);
+}
+body.cardhover-accent-line .service-card:hover::after, body.cardhover-accent-line .bento-cell.card-bordered:hover::after, body.cardhover-accent-line .value-card.card-bordered:hover::after {
+  transform: scaleX(1);
+}
+body.cardhover-accent-line .service-card:hover h3, body.cardhover-accent-line .bento-cell.card-bordered:hover h3, body.cardhover-accent-line .value-card.card-bordered:hover h3 {
+  transform: translateX(4px);
+}
+body.cardhover-accent-line .service-card h3, body.cardhover-accent-line .bento-cell.card-bordered h3, body.cardhover-accent-line .value-card.card-bordered h3 {
+  transition: transform .3s cubic-bezier(.2,.8,.2,1);
+}
+
+body.cardhover-image-zoom .bento-cell.bento-media { overflow: hidden; }
+body.cardhover-image-zoom .bento-cell.bento-media img { transition: transform .6s cubic-bezier(.2,.7,.2,1); }
+body.cardhover-image-zoom .bento-cell.bento-media:hover img { transform: scale(1.08); }
+body.cardhover-image-zoom .service-card, body.cardhover-image-zoom .bento-cell.card-bordered, body.cardhover-image-zoom .value-card.card-bordered {
+  transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease;
+}
+body.cardhover-image-zoom .service-card:hover, body.cardhover-image-zoom .bento-cell.card-bordered:hover, body.cardhover-image-zoom .value-card.card-bordered:hover {
+  transform: translateY(-6px);
+}
+
+/* Pointer-driven 3D tilt — script.js sets --tilt-x/--tilt-y per card on
+   mousemove; CSS just applies them, so there's no continuous JS/CSS fight. */
+body.cardhover-tilt-depth .service-card, body.cardhover-tilt-depth .bento-cell.card-bordered, body.cardhover-tilt-depth .value-card.card-bordered {
+  --tilt-x: 0deg; --tilt-y: 0deg;
+  transform: perspective(700px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+  transition: transform .2s ease, box-shadow .3s ease;
+  will-change: transform;
+}
+body.cardhover-tilt-depth .service-card:hover, body.cardhover-tilt-depth .bento-cell.card-bordered:hover, body.cardhover-tilt-depth .value-card.card-bordered:hover {
+  box-shadow: 0 30px 50px -24px rgba(0,0,0,.35);
+}
+
+body.cardhover-subtle-lift .service-card, body.cardhover-subtle-lift .bento-cell.card-bordered, body.cardhover-subtle-lift .value-card.card-bordered {
+  transition: transform .45s cubic-bezier(.16,1,.3,1), box-shadow .45s ease;
+}
+body.cardhover-subtle-lift .service-card:hover, body.cardhover-subtle-lift .bento-cell.card-bordered:hover, body.cardhover-subtle-lift .value-card.card-bordered:hover {
+  transform: translateY(-3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[class*="cardhover-"] .service-card, body[class*="cardhover-"] .bento-cell, body[class*="cardhover-"] .value-card {
+    transition: none !important; transform: none !important;
+  }
+}
+
+/* =====================================================================
+   STICKY-REVEAL FOOTER — the footer sits pinned at the viewport bottom
+   underneath the main content, which has rounded bottom corners and its
+   own opaque background; as the page finishes scrolling the rounded
+   corners "peel away" to reveal the footer that was already waiting there.
+   ===================================================================== */
+.page-shell {
+  position: relative; z-index: 2; background: var(--bg-light);
+  border-radius: 0 0 28px 28px; overflow: hidden;
+}
+.site-footer { position: sticky; bottom: 0; z-index: 1; }
+
+/* =====================================================================
+   STICKY / PINNED STORYTELLING SECTION — script.js pins this section
+   in place (via ScrollTrigger) for a short scroll distance while its
+   content (the stat counters) animates, then releases it. Falls back to a
+   normal static section wherever ScrollTrigger/GSAP isn't available.
+   ===================================================================== */
+.pin-section { position: relative; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pin-section { position: relative !important; top: auto !important; }
 }
