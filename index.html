@@ -12,26 +12,26 @@
 <link rel="stylesheet" href="base.css">
 <link rel="stylesheet" href="tokens.css">
 </head>
-<body class="tpl-home_services style-card-heavy hero-dark-glass cta-gradient services-bento-grid vsys-dark-premium cards-glass theme-dark type-oversized">
+<body class="tpl-home_services style-card-heavy body-hero-dark-glass cta-gradient services-bento-grid vsys-dark-premium cards-glass theme-dark type-oversized">
 <!-- Concept demo prepared by WEBOIRE STUDIO. Not affiliated with or published by [MOCK] WEBOIRE Pipeline Test Co.. Imagery is generic industry stock, not photos of this business. -->
 
 <header class="site-nav">
   <div class="nav-inner">
     <div class="nav-brand">[MOCK] WEBOIRE Pipeline Test Co.</div>
-    <nav class="nav-links"><a href="#services">Services</a><a href="#why-us">Overview</a><a href="#about">About</a><a href="#service-area">Service Area</a><a href="#faq">FAQ</a><a href="#get-started">Get Started</a><a href="#contact">Contact</a></nav>
+    <nav class="nav-links"><a href="#services">Services</a><a href="#at-a-glance">At a Glance</a><a href="#why-us">Overview</a><a href="#about">About</a><a href="#service-area">Service Area</a><a href="#faq">FAQ</a><a href="#get-started">Get Started</a><a href="#contact">Contact</a></nav>
     <button class="nav-toggle" aria-label="Menu" id="navToggle"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 9 5-9 5-9-5 9-5z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/></svg></button>
   </div>
 </header>
 
 <section class="hero hero-dark-glass" id="home">
-  <div class="hero-media"><img class="hero-bg-img" src="images/electrician.jpg" alt=""   decoding="async"></div>
+  <div class="hero-media"><img class="hero-bg-img" src="images/solar-panel.jpg" alt=""   decoding="async"></div>
   <div class="hero-scrim"></div>
   <div class="hero-inner">
     <div class="hero-glass-card">
-      <span class="eyebrow eyebrow-on-dark reveal-mask"><span>Local Services</span></span>
+      <span class="eyebrow eyebrow-on-dark reveal-mask"><span>Professional Services</span></span>
       <h1 class="reveal-mask"><span>[MOCK] WEBOIRE Pipeline Test Co.</span></h1>
-      <p class="hero-subhead reveal">Browse services and get in touch in a few steps.</p>
-      <div class="hero-ctas reveal"><a class="btn btn-primary btn-lg" href="tel:+15550109999">Get In Touch</a></div>
+      <p class="hero-subhead reveal">Services, service area, and contact details — all in one place.</p>
+      <div class="hero-ctas reveal"><a class="btn btn-primary btn-lg" href="tel:+15550109999">Call Now</a></div>
     </div>
   </div>
 </section>
@@ -40,12 +40,37 @@
   <div class="section-inner">
     <span class="section-eyebrow">What We Do</span>
     <h2>Services</h2>
-    <div class="service-grid">
-    <div class="service-card service-card-placeholder">
-      <div class="service-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></div>
-      <h3>Service details pending</h3>
-      <p class="placeholder-note">Internal note — add confirmed services once verified with the business.</p>
-    </div></div>
+    <div class="bento-grid">
+        <div class="bento-cell card-bordered reveal stagger-child span-2">
+          <div class="service-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></div>
+          <h3>Residential Wiring</h3>
+        </div>
+        <div class="bento-cell card-bordered reveal stagger-child">
+          <div class="service-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></div>
+          <h3>Panel Upgrades</h3>
+        </div>
+        <div class="bento-cell bento-media span-2 reveal stagger-child">
+          <img src="images/overhead-power-line.png" alt="" loading="lazy" decoding="async">
+          <div class="bento-media-label"><h3>Lighting Installation</h3></div>
+        </div>
+        <div class="bento-cell card-bordered reveal stagger-child">
+          <div class="service-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></div>
+          <h3>Circuit Troubleshooting</h3>
+        </div>
+        <div class="bento-cell card-bordered reveal stagger-child">
+          <div class="service-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></div>
+          <h3>EV Charger Installation</h3>
+        </div></div>
+  </div>
+</section>
+
+<section class="section" id="at-a-glance">
+  <div class="section-inner">
+    <div class="stats-band">
+      <div class="stat-tile reveal stagger-child">
+        <span class="stat-number" data-counter-to="5">0</span>
+        <div class="stat-label">Services Offered</div>
+      </div></div>
   </div>
 </section>
 
@@ -79,11 +104,12 @@
 
 <section class="section section-split-media" id="about">
   <div class="section-inner about-grid">
-    <div class="about-media img-hover reveal"><img class="" src="images/electrical-conduit.jpg" alt="" loading="lazy"  decoding="async"></div>
+    <div class="about-media img-hover reveal"><img class="" src="images/overhead-power-line.png" alt="" loading="lazy"  decoding="async"></div>
     <div class="about-copy reveal">
       <span class="section-eyebrow">About</span>
       <h2>[MOCK] WEBOIRE Pipeline Test Co.</h2>
       <p class="about-text">[MOCK] WEBOIRE Pipeline Test Co. is a electrician business serving Serving Calgary and surrounding areas.</p>
+      <p class="about-text">Services include Residential Wiring, Panel Upgrades, Lighting Installation, Circuit Troubleshooting, EV Charger Installation.</p>
       
     </div>
   </div>
@@ -121,9 +147,9 @@
     <div class="cta-split-copy">
       <h2>Ready to Get Started?</h2>
       <p>Reach out today to start the conversation.</p>
-      <a class="btn btn-primary btn-lg" href="tel:+15550109999">Get In Touch</a>
+      <a class="btn btn-primary btn-lg" href="tel:+15550109999">Call Now</a>
     </div>
-    <div class="cta-split-media img-hover"><img class="" src="images/electrical-conduit.jpg" alt="" loading="lazy"  decoding="async"></div>
+    <div class="cta-split-media img-hover"><img class="" src="images/overhead-power-line.png" alt="" loading="lazy"  decoding="async"></div>
   </div>
 </section>
 
