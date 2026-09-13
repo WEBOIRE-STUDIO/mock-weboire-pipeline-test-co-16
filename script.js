@@ -1,29 +1,36 @@
-// WEBOIRE STUDIO demo — motion system. Visibility detection always uses
-// IntersectionObserver (reflow-proof by design — it re-evaluates dynamically
-// as the page loads/resizes, unlike a library that pre-computes pixel scroll
-// offsets, which can go stale when web fonts or lazy images reflow the page
-// after initial paint). GSAP is used only for the actual tween/animation
-// once an element is confirmed visible, when available — falling back to
-// plain CSS transitions (already baked into base.css) otherwise. This keeps
-// the motion premium without making it fragile.
+// WEBOIRE STUDIO demo — motion system. GSAP + ScrollTrigger drive the real
+// choreography (split-word hero entrance, staggered/directional section
+// reveals, a pinned storytelling moment, scroll-linked parallax). A plain
+// IntersectionObserver is kept ONLY as a safety-net fallback — if the CDN
+// script fails to load, or a ScrollTrigger somehow never fires for an
+// element, the observer force-reveals it so content is never permanently
+// invisible. Everything here respects prefers-reduced-motion.
 (function () {
   var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var isMobile = window.matchMedia('(max-width: 780px)').matches;
   var hasGsap = !reducedMotion && typeof window.gsap !== 'undefined';
+  var hasScrollTrigger = hasGsap && typeof window.ScrollTrigger !== 'undefined';
+
+  if (hasScrollTrigger) window.gsap.registerPlugin(window.ScrollTrigger);
 
   // ---- Mobile-safe nav ----
   var toggle = document.getElementById('navToggle');
   var links = document.querySelector('.nav-links');
   if (toggle && links) {
     toggle.addEventListener('click', function () {
-      links.classList.toggle('open');
+      var open = links.classList.toggle('open');
+      toggle.classList.toggle('open', open);
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
     links.querySelectorAll('a').forEach(function (a) {
-      a.addEventListener('click', function () { links.classList.remove('open'); });
+      a.addEventListener('click', function () {
+        links.classList.remove('open');
+        toggle.classList.remove('open');
+      });
     });
   }
 
-  // ---- Sticky nav: shrink/solidify after a small scroll ----
+  // ---- Sticky nav: shrink/blur after a small scroll ----
   var nav = document.querySelector('.site-nav');
   if (nav) {
     var setNavState = function () { nav.classList.toggle('nav-scrolled', window.scrollY > 24); };
@@ -31,99 +38,222 @@
     window.addEventListener('scroll', setNavState, { passive: true });
   }
 
-  // ---- Scroll-triggered reveals (sections, images, masked headings) ----
   document.querySelectorAll('.section, .hero').forEach(function (el) { el.classList.add('reveal'); });
-  var revealEls = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
-  var maskWrappers = Array.prototype.slice.call(document.querySelectorAll('.reveal-mask'));
-  var clipImages = Array.prototype.slice.call(document.querySelectorAll('.img-clip-reveal'));
+
+  // ---- Collect everything that needs a "reveal on visible" treatment ----
+  var revealEls = Array.prototype.slice.call(document.querySelectorAll(
+    '.reveal, .reveal-mask, .img-clip-reveal, [class*="reveal-dir-"]'
+  ));
+  var splitWords = Array.prototype.slice.call(document.querySelectorAll('.split-word'));
   var staggerGroups = Array.prototype.slice.call(
     document.querySelectorAll('.bento-grid, .stats-band, .value-grid, .service-grid')
   ).filter(function (el) { return el.querySelector('.stagger-child'); });
   var counters = Array.prototype.slice.call(document.querySelectorAll('[data-counter-to]'));
 
-  function animateIn(el) {
-    if (!hasGsap) { el.classList.add('in-view'); return; }
-    // GSAP takes over from here — the CSS .reveal/.reveal-mask/.img-clip-reveal
-    // hidden states still define the STARTING point (opacity/transform), GSAP
-    // just animates to the resting state with nicer easing than a CSS transition.
-    el.classList.add('in-view', 'gsap-driven');
-    if (el.classList.contains('reveal-mask')) {
-      window.gsap.to(el.querySelector('span'), { y: 0, duration: 0.8, ease: 'power3.out' });
-    } else if (el.classList.contains('img-clip-reveal')) {
-      window.gsap.to(el, { opacity: 1, scale: 1, duration: 1, ease: 'power2.out' });
-    } else {
-      window.gsap.to(el, { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out' });
-    }
-  }
+  function markRevealed(el) { el.classList.add('in-view'); }
 
-  function animateStaggerGroup(group) {
-    var children = Array.prototype.slice.call(group.querySelectorAll('.stagger-child'));
-    if (!hasGsap) { children.forEach(function (c) { c.classList.add('in-view'); }); return; }
-    window.gsap.to(children, { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out', stagger: 0.08 });
-  }
-
-  // The element's default/no-JS content is always the REAL final value (set
-  // server-side) — required for accessibility/SEO, so a screen reader or a
-  // crawler never sees "0". Only once GSAP is confirmed available and the
-  // element is actually in view do we drop it to 0 and animate back up.
-  function animateCounter(el) {
-    var target = parseFloat(el.getAttribute('data-counter-to'));
-    var suffix = (el.textContent.match(/[^\d]+$/) || [''])[0];
-    if (!isFinite(target)) return;
-    if (!hasGsap) return; // leave the real value in place — no JS to animate it
-    var obj = { val: 0 };
-    el.textContent = '0' + suffix;
-    window.gsap.to(obj, {
-      val: target, duration: 1.4, ease: 'power1.out',
-      onUpdate: function () { el.textContent = Math.round(obj.val) + suffix; },
-    });
-  }
-
-  if (reducedMotion || !('IntersectionObserver' in window)) {
-    revealEls.concat(maskWrappers, clipImages).forEach(function (el) { el.classList.add('in-view'); });
-    staggerGroups.forEach(function (group) {
-      group.querySelectorAll('.stagger-child').forEach(function (c) { c.classList.add('in-view'); });
-    });
+  if (reducedMotion) {
+    revealEls.concat(splitWords).forEach(markRevealed);
+    staggerGroups.forEach(function (g) { g.querySelectorAll('.stagger-child').forEach(markRevealed); });
     counters.forEach(function (el) {
       var target = parseFloat(el.getAttribute('data-counter-to'));
       var suffix = (el.textContent.match(/[^\d]+$/) || [''])[0];
       if (isFinite(target)) el.textContent = target + suffix;
     });
   } else {
-    var makeObserver = function (onEnter, threshold) {
+    // ---- Hero: entrance runs on load, not scroll — it's already on screen ----
+    // The whole-section `.hero.reveal` fade is left to its own CSS transition
+    // (just needs `.in-view` added); GSAP is only for the parts that need
+    // real choreography — staggered words, the eyebrow mask, the image clip.
+    var heroSection = document.querySelector('.hero');
+    var heroWords = Array.prototype.slice.call(document.querySelectorAll('.hero .split-word'));
+    var heroMasks = Array.prototype.slice.call(document.querySelectorAll('.hero .reveal-mask'));
+    var heroClipImgs = Array.prototype.slice.call(document.querySelectorAll('.hero .img-clip-reveal'));
+    var heroRevealEls = (heroSection ? [heroSection] : []).concat(heroMasks, heroClipImgs);
+
+    if (heroSection) markRevealed(heroSection);
+    if (hasGsap) {
+      var heroTl = window.gsap.timeline({ defaults: { ease: 'power3.out' } });
+      heroTl.to(heroWords.map(function (w) { return w.querySelector('span'); }), { y: 0, rotate: 0, duration: .8, stagger: .05 }, 0)
+        .to(heroMasks.map(function (e) { return e.querySelector('span'); }), { y: 0, duration: .7 }, 0.1)
+        .to(heroClipImgs, { opacity: 1, scale: 1, duration: 1 }, 0.05);
+      heroWords.forEach(markRevealed);
+      heroMasks.forEach(markRevealed);
+      heroClipImgs.forEach(markRevealed);
+    } else {
+      heroWords.concat(heroMasks, heroClipImgs).forEach(markRevealed);
+    }
+
+    // Everything below the hero uses the same "reveal" set minus what the hero already handled.
+    var belowFoldReveals = revealEls.filter(function (el) { return !heroRevealEls.includes(el); });
+    var belowFoldWords = splitWords.filter(function (el) { return !heroWords.includes(el); });
+
+    if (hasScrollTrigger) {
+      document.body.classList.add('gsap-ready');
+
+      belowFoldReveals.forEach(function (el) {
+        window.ScrollTrigger.create({
+          trigger: el, start: 'top 88%', once: true,
+          onEnter: function () {
+            markRevealed(el);
+            if (el.classList.contains('reveal-mask')) {
+              window.gsap.to(el.querySelector('span'), { y: 0, duration: .8, ease: 'power3.out' });
+            }
+          },
+        });
+      });
+
+      belowFoldWords.forEach(function (el) {
+        window.ScrollTrigger.create({
+          trigger: el, start: 'top 92%', once: true,
+          onEnter: function () {
+            markRevealed(el);
+            window.gsap.to(el.querySelector('span'), { y: 0, rotate: 0, duration: .7, ease: 'power3.out' });
+          },
+        });
+      });
+
+      staggerGroups.forEach(function (group) {
+        window.ScrollTrigger.create({
+          trigger: group, start: 'top 85%', once: true,
+          onEnter: function () {
+            var children = group.querySelectorAll('.stagger-child');
+            window.gsap.to(children, { opacity: 1, y: 0, duration: .7, ease: 'power2.out', stagger: .08 });
+          },
+        });
+      });
+
+      counters.forEach(function (el) {
+        var target = parseFloat(el.getAttribute('data-counter-to'));
+        var suffix = (el.textContent.match(/[^\d]+$/) || [''])[0];
+        if (!isFinite(target)) return;
+        window.ScrollTrigger.create({
+          trigger: el, start: 'top 90%', once: true,
+          onEnter: function () {
+            var obj = { val: 0 };
+            el.textContent = '0' + suffix;
+            window.gsap.to(obj, { val: target, duration: 1.4, ease: 'power1.out', onUpdate: function () { el.textContent = Math.round(obj.val) + suffix; } });
+          },
+        });
+      });
+
+      // ---- Scroll-linked parallax on hero media ----
+      if (!isMobile) {
+        var parallaxEl = document.querySelector('.hero-bg-img, .hero-visual-img');
+        if (parallaxEl) {
+          window.gsap.to(parallaxEl, {
+            yPercent: 16, scale: 1.08, ease: 'none',
+            scrollTrigger: { trigger: parallaxEl.closest('.hero'), start: 'top top', end: 'bottom top', scrub: .5 },
+          });
+        }
+      }
+
+      // ---- Sticky/pinned storytelling moment (motion preset-driven) ----
+      var pinSection = document.querySelector('.pin-section');
+      if (pinSection && !isMobile) {
+        window.ScrollTrigger.create({
+          trigger: pinSection, start: 'top top', end: '+=60%', pin: true, pinSpacing: true,
+        });
+      }
+
+      // Re-measure once web fonts / lazy images have actually settled — the
+      // one thing that can make a ScrollTrigger's cached start/end position
+      // go stale (see buildSite.js note on why IntersectionObserver stays as
+      // a fallback specifically for this).
+      var refresh = function () { window.ScrollTrigger.refresh(); };
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(refresh);
+      window.addEventListener('load', refresh);
+      setTimeout(refresh, 500);
+      setTimeout(refresh, 1500);
+
+      // ---- Safety net: force-reveal anything still hidden well after load,
+      // in case a ScrollTrigger position went stale and never fired. ----
+      setTimeout(function () {
+        var stillHidden = document.querySelectorAll('.reveal:not(.in-view), .reveal-mask:not(.in-view), .img-clip-reveal:not(.in-view), [class*="reveal-dir-"]:not(.in-view), .split-word:not(.in-view)');
+        if (!stillHidden.length) return;
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) { markRevealed(entry.target); io.unobserve(entry.target); }
+          });
+        }, { threshold: 0.05 });
+        stillHidden.forEach(function (el) { io.observe(el); });
+      }, 3000);
+    } else {
+      // ---- No ScrollTrigger available (CDN blocked) — IntersectionObserver runs the whole show ----
       var observer = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
-          if (entry.isIntersecting) { onEnter(entry.target); observer.unobserve(entry.target); }
+          if (!entry.isIntersecting) return;
+          markRevealed(entry.target);
+          if (entry.target.classList.contains('reveal-mask') || entry.target.classList.contains('split-word')) {
+            var span = entry.target.querySelector('span');
+            if (span) span.style.transform = 'none';
+          }
+          observer.unobserve(entry.target);
         });
-      }, { threshold: threshold || 0.12 });
-      return observer;
-    };
-
-    var elObserver = makeObserver(animateIn);
-    revealEls.concat(maskWrappers, clipImages).forEach(function (el) { elObserver.observe(el); });
-
-    var groupObserver = makeObserver(animateStaggerGroup, 0.15);
-    staggerGroups.forEach(function (group) { groupObserver.observe(group); });
-
-    var counterObserver = makeObserver(animateCounter, 0.4);
-    counters.forEach(function (el) { counterObserver.observe(el); });
+      }, { threshold: 0.12 });
+      belowFoldReveals.concat(belowFoldWords).forEach(function (el) { observer.observe(el); });
+      staggerGroups.forEach(function (group) {
+        var groupObserver = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            entry.target.querySelectorAll('.stagger-child').forEach(markRevealed);
+            groupObserver.unobserve(entry.target);
+          });
+        }, { threshold: 0.15 });
+        groupObserver.observe(group);
+      });
+      counters.forEach(function (el) {
+        var target = parseFloat(el.getAttribute('data-counter-to'));
+        var suffix = (el.textContent.match(/[^\d]+$/) || [''])[0];
+        if (isFinite(target)) el.textContent = target + suffix;
+      });
+      // Plain rAF parallax fallback — environment-agnostic, no cached positions.
+      if (!isMobile) {
+        var fallbackParallax = document.querySelector('.hero-bg-img, .hero-visual-img');
+        if (fallbackParallax) {
+          var ticking = false;
+          window.addEventListener('scroll', function () {
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(function () {
+              var offset = Math.min(window.scrollY * 0.15, 80);
+              fallbackParallax.style.transform = 'translateY(' + offset + 'px) scale(1.08)';
+              ticking = false;
+            });
+          }, { passive: true });
+        }
+      }
+    }
   }
 
-  // ---- Parallax on hero media (desktop only, plain scroll-linked transform —
-  // deliberately not scroll-position-cached, so it can't go stale on reflow) ----
-  if (!reducedMotion && !isMobile) {
-    var parallaxEl = document.querySelector('.hero-bg-img, .hero-visual-img');
-    if (parallaxEl) {
-      var ticking = false;
-      window.addEventListener('scroll', function () {
-        if (ticking) return;
-        ticking = true;
-        requestAnimationFrame(function () {
-          var offset = Math.min(window.scrollY * 0.15, 80);
-          parallaxEl.style.transform = 'translateY(' + offset + 'px) scale(1.08)';
-          ticking = false;
-        });
-      }, { passive: true });
-    }
+  // ---- Magnetic CTA buttons (desktop only, pointer-driven, capped travel) ----
+  if (!reducedMotion && !isMobile && window.matchMedia('(pointer: fine)').matches) {
+    document.querySelectorAll('.btn-magnetic').forEach(function (btn) {
+      var strength = 14;
+      btn.addEventListener('mousemove', function (e) {
+        var rect = btn.getBoundingClientRect();
+        var x = (e.clientX - rect.left - rect.width / 2) / (rect.width / 2);
+        var y = (e.clientY - rect.top - rect.height / 2) / (rect.height / 2);
+        btn.style.transform = 'translate(' + (x * strength) + 'px,' + (y * strength) + 'px)';
+      });
+      btn.addEventListener('mouseleave', function () { btn.style.transform = ''; });
+    });
+  }
+
+  // ---- Card tilt (pointer-driven, only when the motion preset asks for it) ----
+  if (!reducedMotion && !isMobile && document.body.classList.contains('cardhover-tilt-depth') && window.matchMedia('(pointer: fine)').matches) {
+    document.querySelectorAll('.service-card, .bento-cell.card-bordered, .value-card.card-bordered').forEach(function (card) {
+      card.addEventListener('mousemove', function (e) {
+        var rect = card.getBoundingClientRect();
+        var px = (e.clientX - rect.left) / rect.width - 0.5;
+        var py = (e.clientY - rect.top) / rect.height - 0.5;
+        card.style.setProperty('--tilt-x', (-py * 8) + 'deg');
+        card.style.setProperty('--tilt-y', (px * 8) + 'deg');
+      });
+      card.addEventListener('mouseleave', function () {
+        card.style.setProperty('--tilt-x', '0deg');
+        card.style.setProperty('--tilt-y', '0deg');
+      });
+    });
   }
 })();
