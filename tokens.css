@@ -2,11 +2,11 @@
   --primary: #b5502e;
   --primary-dark: #7a3620;
   --accent: #e0a458;
-  --text-dark: #241610;
+  --text-dark: #f2f1ee;
   --text-on-primary: #ffffff;
-  --bg-light: #fdf7f2;
-  --bg-alt: #f7e9dc;
-  --border: #ecd3bd;
+  --bg-light: #0a0a0b;
+  --bg-alt: #151517;
+  --border: rgba(255,255,255,0.12);
   --radius: 8px;
   --font-heading: 'Fraunces';
   --font-body: 'Inter';
