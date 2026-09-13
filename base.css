@@ -345,7 +345,8 @@ body.theme-dark .eyebrow:not(.eyebrow-on-dark) { color: var(--accent); backgroun
 body.theme-dark .verified-rating { color: var(--accent); }
 body.theme-dark .service-card,
 body.theme-dark .faq-item,
-body.theme-dark .value-card.card-bordered { background: #141416; border-color: var(--border); }
+body.theme-dark .value-card.card-bordered,
+body.theme-dark .bento-cell.card-bordered { background: #141416; border-color: var(--border); color: var(--text-dark); }
 body.theme-dark .service-typo-item { border-color: var(--border); }
 body.theme-dark .service-row, body.theme-dark .service-row-editorial { border-color: var(--border); }
 
@@ -404,26 +405,55 @@ body.theme-dark .service-row, body.theme-dark .service-row-editorial { border-co
 .hero-geometric-angled h1 { font-size: clamp(2.6rem, 6.5vw, 4.6rem); }
 @media (max-width: 860px) { .hero-geometric-angled .hero-shape-a, .hero-geometric-angled .hero-shape-b { display: none; } }
 
-/* ---------- Hero: dark-glass (dark-premium system) ---------- */
-.hero-dark-glass { position: relative; min-height: 96vh; padding: 0; }
-.hero-dark-glass .hero-media { position: absolute; inset: 0; z-index: 0; }
-.hero-dark-glass .hero-bg-img { position: absolute; inset: 0; filter: saturate(1.05) contrast(1.03); }
+/* ---------- Hero: dark-glass (dark-premium / cinematic-editorial) ----------
+   Oversized type sits DIRECTLY on the image — no floating card. The image
+   wipes into view via an animated clip-path (a real mask reveal, not an
+   opacity/scale fade), and script.js applies ONE scroll-linked exit
+   transform (scale+fade, scrubbed) as the hero is scrolled past. */
+.hero-dark-glass { position: relative; min-height: 100vh; padding: 0; overflow: hidden; }
+.hero-dark-glass .hero-media-mask {
+  position: absolute; inset: 0; z-index: 0;
+  clip-path: inset(0 0 0 42%);
+  transition: clip-path 1.15s cubic-bezier(.76,0,.24,1);
+}
+.hero-dark-glass .hero-media-mask.in-view { clip-path: inset(0 0 0 0%); }
+.hero-dark-glass .hero-media { position: absolute; inset: 0; }
+.hero-dark-glass .hero-bg-img { position: absolute; inset: 0; filter: saturate(1.08) contrast(1.05); }
 .hero-dark-glass .hero-scrim {
-  background: linear-gradient(180deg, rgba(6,6,8,.15) 0%, rgba(6,6,8,.55) 55%, rgba(6,6,8,.92) 100%);
+  background: linear-gradient(0deg, rgba(4,4,6,.96) 0%, rgba(4,4,6,.62) 34%, rgba(4,4,6,.18) 58%, rgba(4,4,6,.4) 100%);
 }
 .hero-dark-glass .hero-inner {
   position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
-  max-width: 1180px; margin: 0 auto; padding: 0 24px 64px; box-sizing: border-box;
+  padding: 0 5vw 48px; box-sizing: border-box;
 }
-.hero-dark-glass .hero-glass-card {
-  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
-  backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
-  border-radius: var(--radius); padding: 44px 40px; max-width: 720px;
+.hero-dark-glass .hero-cinematic-type {
+  color: #fff; font-size: clamp(3.2rem, 10.5vw, 9.5rem); font-weight: 800; letter-spacing: -0.03em;
+  line-height: .9; max-width: 17ch; margin: 0 0 .35em;
 }
-.hero-dark-glass h1 { color: #fff; font-size: clamp(2.6rem, 6.2vw, 4.8rem); }
-.hero-dark-glass .hero-subhead { color: rgba(255,255,255,0.82); }
-.hero-dark-glass .hero-accent-word { color: var(--accent); }
-@media (max-width: 700px) { .hero-dark-glass .hero-glass-card { padding: 30px 24px; } }
+.hero-dark-glass .hero-cinematic-footer {
+  display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; flex-wrap: wrap;
+  border-top: 1px solid rgba(255,255,255,.16); padding-top: 22px;
+}
+.hero-dark-glass .hero-subhead { max-width: 420px; margin: 0; }
+.hero-dark-glass .hero-scroll-cue {
+  position: absolute; right: 5vw; bottom: 30px; z-index: 2; width: 1px; height: 54px; background: rgba(255,255,255,.3);
+}
+.hero-dark-glass .hero-scroll-cue span {
+  position: absolute; top: 0; left: -2px; width: 5px; height: 5px; border-radius: 50%; background: #fff;
+  animation: heroScrollCue 2.2s ease-in-out infinite;
+}
+@keyframes heroScrollCue { 0% { top: 0; opacity: 1; } 85% { opacity: 0; } 100% { top: 100%; opacity: 0; } }
+@media (max-width: 700px) {
+  .hero-dark-glass .hero-cinematic-type { font-size: clamp(2.6rem, 13vw, 4rem); }
+  .hero-dark-glass .hero-cinematic-footer { flex-direction: column; align-items: flex-start; gap: 18px; }
+  .hero-dark-glass .hero-scroll-cue { display: none; }
+  .hero-dark-glass .hero-media-mask { clip-path: inset(0 0 0 0); transition: opacity .9s ease; opacity: 0; }
+  .hero-dark-glass .hero-media-mask.in-view { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-dark-glass .hero-media-mask { transition: none !important; clip-path: inset(0 0 0 0) !important; opacity: 1 !important; }
+  .hero-dark-glass .hero-scroll-cue span { animation: none !important; }
+}
 
 /* ---------- Card styles (applied via body.cards-*) ---------- */
 body.cards-outline-mono .service-card,
@@ -516,6 +546,10 @@ body.theme-dark .stat-tile .stat-number { color: var(--accent); }
 
 /* ---------- GSAP-driven reveal helpers (script.js falls back to these when GSAP fails to load) ---------- */
 .stagger-child { opacity: 0; transform: translateY(18px); }
+/* Bento/value cards alternate which side they enter from — not every tile
+   moving the same direction on the same timing. */
+.bento-grid .stagger-child, .value-grid .stagger-child { transform: translateY(18px) translateX(-26px); }
+.bento-grid .stagger-child.stagger-child-alt, .value-grid .stagger-child.stagger-child-alt { transform: translateY(18px) translateX(26px); }
 .gsap-ready .stagger-child { transition: none; } /* GSAP takes over inline styles once it initializes */
 
 @media (prefers-reduced-motion: reduce) {
@@ -592,13 +626,64 @@ body.cardhover-subtle-lift .service-card:hover, body.cardhover-subtle-lift .bent
 .site-footer { position: sticky; bottom: 0; z-index: 1; }
 
 /* =====================================================================
-   STICKY / PINNED STORYTELLING SECTION — script.js pins this section
-   in place (via ScrollTrigger) for a short scroll distance while its
-   content (the stat counters) animates, then releases it. Falls back to a
-   normal static section wherever ScrollTrigger/GSAP isn't available.
+   STICKY STORYTELLING — Services becomes a real scrollytelling section for
+   the sticky-storytelling motion preset: a media panel stays PINNED (CSS
+   position:sticky, not a JS pin — simpler and more robust) while the visitor
+   scrolls past a list of services; each service activates the panel's
+   matching image as it crosses center-screen (see script.js). This needs
+   page-shell's overflow to stay visible (sticky breaks under an overflow:
+   hidden ancestor with a constrained scroll range), so that preset trades
+   the rounded-corner footer clip for a real pinned section.
    ===================================================================== */
-.pin-section { position: relative; }
+body.motion-sticky-storytelling .page-shell { overflow: visible; }
 
+/* Sections overlap slightly with rounded top corners instead of stacking
+   with a flat seam between them — each later section visually "slides up
+   and over" the one before it, so the page reads as one continuous surface
+   rather than separate black bands. The angled .section-dark band already
+   has its own strong transition shape, so it's left out of this treatment. */
+body.motion-sticky-storytelling .section:not(.section-dark) {
+  position: relative; margin-top: -30px; border-radius: 30px 30px 0 0;
+}
+body.motion-sticky-storytelling .hero + .section,
+body.motion-sticky-storytelling .story-section + .section {
+  margin-top: -30px;
+}
+@media (max-width: 600px) {
+  body.motion-sticky-storytelling .section:not(.section-dark) { margin-top: -16px; border-radius: 16px 16px 0 0; }
+}
+
+.story-section { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 48px; padding: 0 5vw; }
+.story-sticky-media {
+  position: sticky; top: 0; height: 100vh; overflow: hidden;
+  display: flex; align-items: center;
+}
+.story-sticky-media .story-img {
+  position: absolute; inset: 10% 0; border-radius: var(--radius); overflow: hidden;
+  opacity: 0; transform: scale(1.04); transition: opacity .6s ease, transform .8s cubic-bezier(.2,.8,.2,1);
+}
+.story-sticky-media .story-img.active { opacity: 1; transform: scale(1); z-index: 1; }
+.story-content { display: flex; flex-direction: column; padding: 14vh 0; }
+.story-item {
+  min-height: 62vh; display: flex; flex-direction: column; justify-content: center;
+  opacity: .3; transition: opacity .5s ease; border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.story-item:last-child { border-bottom: none; }
+.story-item.active { opacity: 1; }
+.story-item .story-index {
+  font-family: var(--font-heading), serif; font-size: 1rem; color: var(--accent); font-weight: 700; margin-bottom: 14px;
+}
+.story-item h3 { font-size: clamp(1.6rem, 3vw, 2.4rem); margin-bottom: 10px; }
+.story-item p { opacity: .75; max-width: 44ch; margin: 0; }
+@media (max-width: 900px) {
+  .story-section { grid-template-columns: 1fr; gap: 0; padding: 0 20px; }
+  .story-sticky-media { position: relative; top: auto; height: 46vh; margin-bottom: 24px; }
+  .story-sticky-media .story-img { inset: 0; }
+  .story-content { padding: 0; }
+  .story-item { min-height: auto; opacity: 1; padding: 20px 0; }
+}
 @media (prefers-reduced-motion: reduce) {
-  .pin-section { position: relative !important; top: auto !important; }
+  .story-img, .story-item { transition: none !important; }
+  .story-img { opacity: 1 !important; transform: none !important; position: relative !important; inset: auto !important; margin-bottom: 16px; }
+  .story-item { opacity: 1 !important; }
 }
