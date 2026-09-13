@@ -3,9 +3,9 @@
   "heroVariant": "dark-glass",
   "serviceLayout": "bento-grid",
   "ctaStyle": "gradient",
-  "paletteSeed": 22,
-  "heroSeed": 22,
-  "copySeed": 22,
+  "paletteSeed": 23,
+  "heroSeed": 23,
+  "copySeed": 23,
   "visualSystem": {
     "key": "dark-premium",
     "label": "Dark Premium",
