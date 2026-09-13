@@ -69,18 +69,22 @@
     var heroWords = Array.prototype.slice.call(document.querySelectorAll('.hero .split-word'));
     var heroMasks = Array.prototype.slice.call(document.querySelectorAll('.hero .reveal-mask'));
     var heroClipImgs = Array.prototype.slice.call(document.querySelectorAll('.hero .img-clip-reveal'));
+    var heroMediaMask = document.querySelector('.hero-media-mask');
     var heroRevealEls = (heroSection ? [heroSection] : []).concat(heroMasks, heroClipImgs);
 
     if (heroSection) markRevealed(heroSection);
     if (hasGsap) {
       var heroTl = window.gsap.timeline({ defaults: { ease: 'power3.out' } });
-      heroTl.to(heroWords.map(function (w) { return w.querySelector('span'); }), { y: 0, rotate: 0, duration: .8, stagger: .05 }, 0)
-        .to(heroMasks.map(function (e) { return e.querySelector('span'); }), { y: 0, duration: .7 }, 0.1)
-        .to(heroClipImgs, { opacity: 1, scale: 1, duration: 1 }, 0.05);
+      if (heroMediaMask) heroTl.to(heroMediaMask, { clipPath: 'inset(0 0 0 0%)', duration: 1.15, ease: 'expo.inOut' }, 0);
+      heroTl.to(heroWords.map(function (w) { return w.querySelector('span'); }), { y: 0, rotate: 0, duration: .8, stagger: .06 }, 0.25)
+        .to(heroMasks.map(function (e) { return e.querySelector('span'); }), { y: 0, duration: .7 }, 0.35)
+        .to(heroClipImgs, { opacity: 1, scale: 1, duration: 1 }, 0.3);
+      if (heroMediaMask) markRevealed(heroMediaMask);
       heroWords.forEach(markRevealed);
       heroMasks.forEach(markRevealed);
       heroClipImgs.forEach(markRevealed);
     } else {
+      if (heroMediaMask) markRevealed(heroMediaMask);
       heroWords.concat(heroMasks, heroClipImgs).forEach(markRevealed);
     }
 
@@ -118,7 +122,7 @@
           trigger: group, start: 'top 85%', once: true,
           onEnter: function () {
             var children = group.querySelectorAll('.stagger-child');
-            window.gsap.to(children, { opacity: 1, y: 0, duration: .7, ease: 'power2.out', stagger: .08 });
+            window.gsap.to(children, { opacity: 1, y: 0, x: 0, duration: .7, ease: 'power2.out', stagger: .08 });
           },
         });
       });
@@ -148,12 +152,32 @@
         }
       }
 
-      // ---- Sticky/pinned storytelling moment (motion preset-driven) ----
-      var pinSection = document.querySelector('.pin-section');
-      if (pinSection && !isMobile) {
-        window.ScrollTrigger.create({
-          trigger: pinSection, start: 'top top', end: '+=60%', pin: true, pinSpacing: true,
+      // ---- ONE strong scroll-linked transformation as the hero exits ----
+      if (heroSection) {
+        window.gsap.to(heroSection, {
+          scale: 0.94, opacity: 0.45, transformOrigin: 'center top', ease: 'none',
+          scrollTrigger: { trigger: heroSection, start: 'top top', end: 'bottom top', scrub: true },
         });
+      }
+
+      // ---- Sticky storytelling: Services panel swaps as each item activates ----
+      // The media panel itself is CSS position:sticky (not JS-pinned) — this
+      // just toggles which image/item is "active" as the visitor scrolls,
+      // real scrollytelling rather than a JS-driven pin.
+      var storyItems = Array.prototype.slice.call(document.querySelectorAll('.story-item'));
+      if (storyItems.length) {
+        var storyImages = document.querySelectorAll('.story-img');
+        storyItems.forEach(function (item) {
+          window.ScrollTrigger.create({
+            trigger: item, start: 'top center', end: 'bottom center',
+            onEnter: function () { setActiveStoryIndex(item.getAttribute('data-story-index')); },
+            onEnterBack: function () { setActiveStoryIndex(item.getAttribute('data-story-index')); },
+          });
+        });
+        function setActiveStoryIndex(index) {
+          storyItems.forEach(function (el) { el.classList.toggle('active', el.getAttribute('data-story-index') === index); });
+          storyImages.forEach(function (el) { el.classList.toggle('active', el.getAttribute('data-story-index') === index); });
+        }
       }
 
       // Re-measure once web fonts / lazy images have actually settled — the
@@ -207,6 +231,8 @@
         var suffix = (el.textContent.match(/[^\d]+$/) || [''])[0];
         if (isFinite(target)) el.textContent = target + suffix;
       });
+      // No ScrollTrigger to drive the story-section's active-item swap — show everything at once.
+      document.querySelectorAll('.story-item, .story-img').forEach(function (el) { el.classList.add('active'); });
       // Plain rAF parallax fallback — environment-agnostic, no cached positions.
       if (!isMobile) {
         var fallbackParallax = document.querySelector('.hero-bg-img, .hero-visual-img');
