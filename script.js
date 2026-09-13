@@ -62,12 +62,17 @@
     window.gsap.to(children, { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out', stagger: 0.08 });
   }
 
+  // The element's default/no-JS content is always the REAL final value (set
+  // server-side) — required for accessibility/SEO, so a screen reader or a
+  // crawler never sees "0". Only once GSAP is confirmed available and the
+  // element is actually in view do we drop it to 0 and animate back up.
   function animateCounter(el) {
     var target = parseFloat(el.getAttribute('data-counter-to'));
     var suffix = (el.textContent.match(/[^\d]+$/) || [''])[0];
     if (!isFinite(target)) return;
-    if (!hasGsap) { el.textContent = target + suffix; return; }
+    if (!hasGsap) return; // leave the real value in place — no JS to animate it
     var obj = { val: 0 };
+    el.textContent = '0' + suffix;
     window.gsap.to(obj, {
       val: target, duration: 1.4, ease: 'power1.out',
       onUpdate: function () { el.textContent = Math.round(obj.val) + suffix; },
