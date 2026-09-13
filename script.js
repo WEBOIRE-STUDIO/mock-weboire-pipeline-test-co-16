@@ -162,23 +162,45 @@
           });
         }
 
-        // ---- About (cinematic): image drifts independently of the static
-        // copy as the section scrolls — the "scroll-linked image/text
-        // relationship" instead of a static image-left/text-right split.
-        var aboutParallax = document.querySelector('.about-cinematic-media');
-        if (aboutParallax) {
-          window.gsap.to(aboutParallax, {
-            yPercent: -8, ease: 'none',
-            scrollTrigger: { trigger: aboutParallax.closest('.about-cinematic'), start: 'top bottom', end: 'bottom top', scrub: .6 },
+        // ---- About (cinematic): image drifts + slowly enlarges as the
+        // section scrolls — tied to the same scroll range the copy lives in,
+        // starting at scale 1 (exactly filling its frame, no baseline zoom)
+        // so it only ever grows, never exposing an edge gap.
+        var aboutImg = document.querySelector('.about-parallax-img');
+        if (aboutImg) {
+          window.gsap.to(aboutImg, {
+            yPercent: -10, scale: 1.12, ease: 'none',
+            scrollTrigger: { trigger: aboutImg.closest('.about-cinematic'), start: 'top bottom', end: 'bottom top', scrub: .6 },
           });
         }
       }
 
-      // ---- ONE strong scroll-linked transformation as the hero exits ----
+      // ---- Hero exit: a pure opacity dissolve, no scale ----
+      // An earlier version also scaled the section down as it exited; scale
+      // shrinks the element's PAINTED size without changing its layout
+      // box, so the vacated space (still full-height in the document flow)
+      // exposed the bare page background as a dead black/empty frame before
+      // the next section's content reached that scroll position. A plain
+      // opacity fade never changes box size, so the next section is always
+      // exactly where it needs to be underneath — no gap is possible.
       if (heroSection) {
         window.gsap.to(heroSection, {
-          scale: 0.94, opacity: 0.45, transformOrigin: 'center top', ease: 'none',
+          opacity: 0.15, ease: 'none',
           scrollTrigger: { trigger: heroSection, start: 'top top', end: 'bottom top', scrub: true },
+        });
+      }
+
+      // ---- Value props: a thin progress rail fills as the row list scrolls
+      // by — the "one subtle scroll-driven behavior" for an otherwise static
+      // section, without turning it into another pinned/sticky moment. ----
+      var valueRail = document.querySelector('.value-editorial-rail-fill');
+      if (valueRail) {
+        window.gsap.to(valueRail, {
+          scaleY: 1, ease: 'none',
+          scrollTrigger: {
+            trigger: valueRail.closest('.value-editorial-list'),
+            start: 'top 75%', end: 'bottom 75%', scrub: true,
+          },
         });
       }
 
