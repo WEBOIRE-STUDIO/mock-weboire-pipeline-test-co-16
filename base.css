@@ -767,7 +767,15 @@ body.theme-dark.motion-sticky-storytelling .nav-links a:hover::after { right: 0;
   color: var(--accent); line-height: 1; display: inline-flex; align-items: baseline; gap: 2px;
 }
 .value-editorial-stat .stat-label { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; opacity: .7; max-width: 15ch; }
-.value-editorial-list { display: flex; flex-direction: column; }
+/* A thin rail alongside the row list fills with scroll progress (see
+   script.js) — one subtle, continuous scroll-driven cue for a section that
+   otherwise just sits static once its entrance reveal finishes. */
+.value-editorial-list { position: relative; display: flex; flex-direction: column; padding-left: 30px; }
+.value-editorial-rail { position: absolute; left: 0; top: 4px; bottom: 4px; width: 2px; background: var(--border); }
+.value-editorial-rail-fill {
+  position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: var(--accent);
+  transform: scaleY(0); transform-origin: top;
+}
 .value-row { position: relative; display: flex; align-items: flex-start; gap: 26px; padding: 26px 0; }
 .value-row::after {
   content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--border);
@@ -784,16 +792,21 @@ body.theme-dark.motion-sticky-storytelling .nav-links a:hover::after { right: 0;
 @media (max-width: 860px) {
   .value-editorial-grid { grid-template-columns: 1fr; gap: 32px; }
   .value-row { padding: 20px 0; gap: 16px; }
+  .value-editorial-list { padding-left: 22px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .value-row::after { transition: none !important; transform: scaleX(1) !important; }
+  .value-editorial-rail { display: none; }
 }
 
-/* ---------- About: cinematic overlap instead of image-left/text-right ---------- */
+/* ---------- About: cinematic overlap instead of image-left/text-right ----------
+   Text gets more relative width and heavier typography than the first pass —
+   the image was dominating the pairing; the grid ratio, a smaller overlap,
+   and a real heading scale now give the copy equal visual weight. */
 .about-cinematic { position: relative; overflow: hidden; padding: 130px 24px; }
 .about-cinematic-inner {
   position: relative; max-width: 1180px; margin: 0 auto;
-  display: grid; grid-template-columns: 1.05fr 0.95fr; align-items: center; min-height: 60vh;
+  display: grid; grid-template-columns: 1.25fr 0.75fr; align-items: center; min-height: 60vh;
 }
 .about-bg-type {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 0;
@@ -801,22 +814,26 @@ body.theme-dark.motion-sticky-storytelling .nav-links a:hover::after { right: 0;
   font-size: clamp(6rem, 17vw, 14rem); color: var(--text-dark); opacity: .05; white-space: nowrap;
   pointer-events: none;
 }
-.about-cinematic-copy { position: relative; z-index: 2; padding-right: 48px; }
+.about-cinematic-copy { position: relative; z-index: 2; padding-right: 56px; max-width: 46ch; }
+.about-cinematic-copy h2 {
+  font-size: clamp(2.2rem, 4vw, 3.6rem); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 22px;
+}
+.about-cinematic-copy .about-text { font-size: 1.25rem; line-height: 1.55; }
 .about-cinematic-media-outer {
   position: relative; z-index: 1; aspect-ratio: 3 / 4; border-radius: var(--radius); overflow: hidden;
-  box-shadow: 0 40px 80px -30px rgba(0,0,0,.5); margin-left: -70px;
+  box-shadow: 0 40px 80px -30px rgba(0,0,0,.5); margin-left: -40px;
 }
-.about-cinematic-media { position: absolute; inset: -10% 0; will-change: transform; }
-.about-cinematic-media .about-parallax-img { transform: scale(1.18); }
+.about-cinematic-media { position: absolute; inset: 0; overflow: hidden; }
+.about-cinematic-media .about-parallax-img { position: absolute; inset: 0; }
 @media (max-width: 900px) {
   .about-cinematic { padding: 80px 20px; }
   .about-cinematic-inner { grid-template-columns: 1fr; min-height: auto; }
-  .about-cinematic-copy { padding-right: 0; }
+  .about-cinematic-copy { padding-right: 0; max-width: none; }
   .about-cinematic-media-outer { margin-left: 0; aspect-ratio: 16 / 10; order: -1; margin-bottom: 28px; }
   .about-bg-type { font-size: clamp(3.4rem, 20vw, 6rem); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .about-cinematic-media { transform: none !important; }
+  .about-parallax-img { transform: none !important; }
 }
 
 /* ---------- Service area: pulse ring on the pin icon ---------- */
@@ -848,11 +865,29 @@ body.theme-dark .faq-item { background: #141416; }
 .faq-item[data-open="true"] .faq-q-icon::after { transform: translateX(-50%) rotate(90deg); opacity: 0; }
 .faq-a-wrap { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .45s cubic-bezier(.2,.8,.2,1); }
 .faq-a-wrap > .faq-a-inner { overflow: hidden; min-height: 0; }
-.faq-a-inner p { margin: 0; padding: 0 20px 20px; opacity: .8; }
-.faq-item[data-open="true"] .faq-a-wrap { grid-template-rows: 1fr; }
-@media (prefers-reduced-motion: reduce) {
-  .faq-a-wrap, .faq-q-icon::after { transition: none !important; }
+/* The answer text itself fades/lifts in on open (not just the height reveal)
+   — a more "elegant" open motion than a bare height snap. */
+.faq-a-inner p {
+  margin: 0; padding: 0 20px 20px; opacity: 0; transform: translateY(-6px);
+  transition: opacity .35s ease .05s, transform .35s ease .05s;
 }
+.faq-item[data-open="true"] .faq-a-wrap { grid-template-rows: 1fr; }
+.faq-item[data-open="true"] .faq-a-inner p { opacity: .8; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .faq-a-wrap, .faq-q-icon::after, .faq-a-inner p { transition: none !important; }
+  .faq-a-inner p { opacity: .8 !important; transform: none !important; }
+}
+
+/* Editorial FAQ: a divider-separated list (matching the Value Props row
+   language) instead of bordered card boxes, with more generous spacing. */
+body.motion-sticky-storytelling .faq-list { gap: 0; }
+body.motion-sticky-storytelling .faq-item {
+  background: transparent; border: none; border-radius: 0; border-bottom: 1px solid var(--border);
+}
+body.motion-sticky-storytelling .faq-item:first-child { border-top: 1px solid var(--border); }
+body.motion-sticky-storytelling .faq-q { padding: 28px 0; font-size: 1.15rem; }
+body.motion-sticky-storytelling .faq-a-inner { padding: 0; }
+body.motion-sticky-storytelling .faq-a-inner p { padding: 0 0 28px; max-width: 60ch; }
 
 /* ---------- CTA: full-bleed "final scene" instead of a color banner ---------- */
 .cta-finale { position: relative; min-height: 85vh; display: flex; align-items: center; padding: 0; overflow: hidden; }
@@ -863,3 +898,54 @@ body.theme-dark .faq-item { background: #141416; }
 .cta-finale-heading { color: #fff; font-size: clamp(2.4rem, 6vw, 5.2rem); margin: 18px 0 20px; line-height: .95; }
 .cta-finale-sub { color: rgba(255,255,255,.85); font-size: 1.15rem; max-width: 480px; }
 @media (max-width: 700px) { .cta-finale { min-height: 70vh; } }
+
+/* ---------- Location: soften the entry into the orange band ----------
+   `.section-dark` uses the primary/accent gradient — a stark, unrelated-
+   looking cut against the surrounding dark neutral background. A short
+   top fade in the page's own dark tone bleeds the entry into the color
+   instead of a sudden block. */
+body.motion-sticky-storytelling .section-dark { position: relative; overflow: hidden; }
+body.motion-sticky-storytelling .section-dark::before {
+  content: ''; position: absolute; inset: 0 0 auto 0; height: 40%; z-index: 0; pointer-events: none;
+  background: linear-gradient(180deg, var(--bg-light) 0%, transparent 100%);
+}
+body.motion-sticky-storytelling .section-dark .section-inner { position: relative; z-index: 1; }
+
+/* ---------- Contact: an asymmetric composition, not centered text ---------- */
+.contact-editorial-grid { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 48px; align-items: center; text-align: left; }
+.contact-editorial-intro h2 { margin: 10px 0 0; }
+.contact-editorial-rows .contact-rows { align-items: flex-start; }
+.contact-editorial-rows .contact-row { font-size: 1.15rem; }
+@media (max-width: 780px) {
+  .contact-editorial-grid { grid-template-columns: 1fr; gap: 24px; text-align: left; }
+}
+
+/* ---------- Footer: an oversized wordmark bookends the hero's own scale ---------- */
+.footer-wordmark {
+  display: block; font-family: var(--font-heading), serif; font-weight: 800; letter-spacing: -0.02em;
+  font-size: clamp(2rem, 6vw, 4.4rem); line-height: 1; margin-bottom: 18px; opacity: .92;
+}
+
+/* ---------- Services: abstract panels stand in for photo repeats ----------
+   Only 1-2 real photos may exist for a thin image category; once every
+   unique photo has been used once, remaining service slides get a palette-
+   only generated texture (a light glow, an architectural line pattern, a
+   shadow gradient) instead of visibly reusing an earlier photo again. */
+.story-img-abstract { background: #0b0b0d; }
+.story-img-abstract::before { content: ''; position: absolute; inset: 0; }
+.story-img-abstract.abstract-variant-0::before {
+  background:
+    radial-gradient(circle at 30% 32%, var(--accent) 0%, transparent 45%),
+    radial-gradient(circle at 78% 72%, var(--primary) 0%, transparent 50%);
+  filter: blur(6px); opacity: .8;
+}
+.story-img-abstract.abstract-variant-1::before {
+  background:
+    repeating-linear-gradient(115deg, rgba(255,255,255,.08) 0px, rgba(255,255,255,.08) 2px, transparent 2px, transparent 26px),
+    radial-gradient(ellipse at 60% 18%, var(--accent) 0%, transparent 55%);
+}
+.story-img-abstract.abstract-variant-2::before {
+  background:
+    linear-gradient(200deg, var(--primary-dark) 0%, transparent 60%),
+    radial-gradient(circle at 22% 82%, var(--accent) 0%, transparent 42%);
+}
